@@ -36,29 +36,19 @@ class Game():
         for player in players:
             for i in range(5):
                 player.stones.append(self.stones.pop())
-        randstone = self.stones.pop()
-        self.valuefield[(0,0)] = randstone[0]
-        self.valuefield[(0,1)] = randstone[1]
-        self.valuefield[(1,0)] = randstone[2]
-        self.positionfield += [((0,0),(0,1),(1,0))]
-        self.edges += combinations(((0,0),(0,1),(1,0)),2)
+        self.set(self.stones.pop())
 
     def set(self,stone,poss):
         """Place a stone onto the field,
            Fit always has to be run to check if a move is valid"""
         #Sort tuple to exclude possible duplicates
         #must be tuple to be hashable
-        poss_list = list(poss)
-        poss_list.sort()
-        poss = tuple(poss_list)
-        if self.fits(stone,poss):
-            self.valuefield[poss[0]] = stone[0]
-            self.valuefield[poss[1]] = stone[1]
-            self.valuefield[poss[2]] = stone[2]  
-            self.positionfield += [poss]
-            self.edges += combinations(poss,2)
-            return True
-        return False
+        self.valuefield[poss[0]] = stone[0]
+        self.valuefield[poss[1]] = stone[1]
+        self.valuefield[poss[2]] = stone[2]  
+        self.positionfield += [poss]
+        self.edges += combinations(poss,2)
+        return True
         
     def player(self):
         """Returns the current player"""
@@ -70,6 +60,7 @@ class Game():
         if self.player_index >= len(self.players):
             self.player_index = 0
 
+    #TODO still buggy, calculate score
     def fits(self,stone,poss):
         """If more than one point has a value
            If at least one edge is in use
@@ -115,15 +106,16 @@ class Player(object):
         return self.stones[self.stone_index]
     def setStone(self,s):
         self.stones[self.stone_index] = s
-    #Maybe there should be a stone class
     def rotate(self):
-        stone = self.stones[self.stone_index]
+        stone = self.stone()
         self.stones[self.stone_index] = stone[1:] + stone[0:1]
     #TODO: Add points
     def move(self,game,position):
-        valid = game.set(self.stone(),position)
+        valid = game.fits(self.stone(),position)
         if valid: 
+            game.set(self.stone())
             self.stones.pop(self.stone_index)
+            self.stone_index -= 1
             if self.stones == []:
                self.stones.append(game.stones.pop())
         return valid
