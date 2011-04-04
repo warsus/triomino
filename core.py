@@ -4,8 +4,8 @@ from random import shuffle
 from collections import defaultdict
 from itertools import combinations_with_replacement,combinations,permutations
 
-def false():
-    return False
+def none():
+    return None
 
 possiblestones = combinations_with_replacement(range(0,6),3)
 
@@ -26,7 +26,7 @@ def allStones():
 class Game():
     """The game class stores and controls the state of the game"""
     def __init__(self,players):
-        self.valuefield = defaultdict(false)
+        self.valuefield = defaultdict(none)
         self.positionfield = []
         self.edges = []
         self.players = players            
@@ -36,7 +36,8 @@ class Game():
         for player in players:
             for i in range(5):
                 player.stones.append(self.stones.pop())
-        self.set(self.stones.pop())
+            player.stones.append([0,1,2])
+        self.set([0,1,2],[(0,0),(0,1),(1,0)])
 
     def set(self,stone,poss):
         """Place a stone onto the field,
@@ -61,6 +62,7 @@ class Game():
             self.player_index = 0
 
     #TODO still buggy, calculate score
+    #Bug is probably due to order of the list
     def fits(self,stone,poss):
         """If more than one point has a value
            If at least one edge is in use
@@ -70,17 +72,16 @@ class Game():
                         Three edges"""
         if poss in self.positionfield:
             return False
-        values = [self.valuefield[pos] for pos in poss if self.valuefield[pos] != False]
-        if len(values) <= 0: 
-            return False
+        posvals = zip(poss,stone)
+        print posvals
+        values = [self.valuefield[posval[0]] for posval in posvals if (self.valuefield[posval[0]] != None) and (self.valuefield[posval[0]] == posval[1])]
+        print values
         edges_count = len([edge for edge in list(combinations(poss,2)) if edge in self.edges])
         if edges_count <= 0:
             return False
-        fitting = [ v[0] == v[1] for v in zip(stone,values)]
-        for true in fitting:
-            if true != True:
-               return False
-        return True
+        if len(values) >= 2: 
+            return True        
+        return False
 
     def gameloop(self):
         """A game loop: Not used in opengl version, because events handle that"""
@@ -113,7 +114,7 @@ class Player(object):
     def move(self,game,position):
         valid = game.fits(self.stone(),position)
         if valid: 
-            game.set(self.stone())
+            game.set(self.stone(),position)
             self.stones.pop(self.stone_index)
             self.stone_index -= 1
             if self.stones == []:
