@@ -2,7 +2,7 @@ from  math import sqrt,trunc
 import pyglet
 import numpy as np
 from pyglet.gl import *
-import triomino
+import core
 
 class State(object):
     def __init__(self, ):
@@ -11,7 +11,7 @@ class State(object):
         self.direction = (0,0)
 
 state = State()
-game = triomino.Game([triomino.Player()])
+game = core.Game([core.Player()])
 
 def move_up(point):
     return (point[0]+1,point[1])

@@ -61,8 +61,9 @@ class Game():
         if self.player_index >= len(self.players):
             self.player_index = 0
 
-    #TODO still buggy, calculate score
-    #Bug is probably due to order of the list
+    #TODO calculate score
+    #Bug is probably due to order of the list UPDATE x
+    #TODO reversed edges are not checked 
     def fits(self,stone,poss):
         """If more than one point has a value
            If at least one edge is in use
@@ -70,19 +71,31 @@ class Game():
            Pointreward: One edge all points 
                         Two edges all points
                         Three edges"""
+        score = sum(stone)
         if poss in self.positionfield:
             return False
         posvals = zip(poss,stone)
-        print posvals
         values = [self.valuefield[posval[0]] for posval in posvals if (self.valuefield[posval[0]] != None) and (self.valuefield[posval[0]] == posval[1])]
-        print values
+        #print values
+        points_count = len(values)
         edges_count = len([edge for edge in list(combinations(poss,2)) if edge in self.edges])
-        if edges_count <= 0:
-            return False
-        if len(values) >= 2: 
-            return True        
-        return False
-
+        #print edges_count 
+        #print points_count
+        print self.edges
+        if points_count > 1:
+            if edges_count == 0:
+                return -1
+            if edges_count == 1:
+                return score
+            if edges_count == 2:
+                return score + 20
+            if edges_count == 3:
+                return score + 30
+            if points_count == 3: 
+                return score + 15        
+        else:
+            return -1
+        
     def gameloop(self):
         """A game loop: Not used in opengl version, because events handle that"""
         for player in self.players:
@@ -113,7 +126,7 @@ class Player(object):
     #TODO: Add points
     def move(self,game,position):
         valid = game.fits(self.stone(),position)
-        if valid: 
+        if valid != -1: 
             game.set(self.stone(),position)
             self.stones.pop(self.stone_index)
             self.stone_index -= 1
